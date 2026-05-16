@@ -40,10 +40,20 @@ import {
   Key,
   Trash2,
   RefreshCw,
-  Package
+  Package,
+  ShieldAlert,
 } from "lucide-react";
 
 const settingsSections = [
+  {
+    id: "admins",
+    title: "Manage Admins",
+    description: "Add, remove, toggle admin access & permissions",
+    icon: ShieldAlert,
+    href: "/settings/admins",
+    color: "from-purple-600 to-indigo-600",
+    superadminOnly: true,
+  },
   {
     id: "gym",
     title: "Gym Settings",
@@ -130,7 +140,7 @@ const quickActions = [
 export default function SettingsPage() {
   const router = useRouter();
   const { permissions } = usePermissions();
-  const { canViewFinance, canCreateTrainer } = useUserRole();
+  const { canViewFinance, canCreateTrainer, user } = useUserRole();
   const [gymName, setGymName] = useState("Loading...");
   const [totalMembers, setTotalMembers] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -252,6 +262,10 @@ export default function SettingsPage() {
           <div className="space-y-3">
             {settingsSections
               .filter((section) => {
+                // Only show superadmin sections to superadmins
+                if (section.superadminOnly && user?.role !== "superadmin") {
+                  return false;
+                }
                 // Hide membership plans, diet plans, and workout plans if members permission is false
                 if (!hasPermission(permissions, PERMISSIONS.MEMBERS)) {
                   return !['plans', 'diet-plans', 'workout-plans'].includes(section.id);

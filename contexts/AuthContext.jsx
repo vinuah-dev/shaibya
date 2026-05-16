@@ -42,7 +42,7 @@ function readGymFromStorage() {
 }
 
 function resolvePermissions(role, userPermissions) {
-  if (role === "owner" || role === "view_only") return OWNER_PERMISSIONS;
+  if (role === "superadmin" || role === "owner" || role === "view_only") return OWNER_PERMISSIONS;
   if (role === "admin" && userPermissions) return userPermissions;
   if (role === "trainer") {
     return {
@@ -150,16 +150,18 @@ export function AuthProvider({ children }) {
 
   const derived = useMemo(() => ({
     isOwner: role === "owner",
+    isSuperAdmin: role === "superadmin",
     isAdmin: role === "admin",
     isViewOnly: role === "view_only",
     isTrainer: role === "trainer",
     isMember: role === "member",
-    canAccessAdmin: ["owner", "admin", "view_only", "trainer"].includes(role),
-    canViewFinance: ["owner", "admin", "view_only"].includes(role),
-    canViewMemberDues: ["owner", "admin", "trainer"].includes(role),
-    canCreateTrainer: ["owner", "admin"].includes(role),
-    canManageStaff: ["owner", "admin"].includes(role),
-    canWrite: ["owner", "admin", "trainer", "member"].includes(role),
+    canAccessAdmin: ["superadmin", "owner", "admin", "view_only", "trainer"].includes(role),
+    canViewFinance: ["superadmin", "owner", "admin", "view_only"].includes(role),
+    canViewMemberDues: ["superadmin", "owner", "admin", "trainer"].includes(role),
+    canCreateTrainer: ["superadmin", "owner", "admin"].includes(role),
+    canManageStaff: ["superadmin", "owner", "admin"].includes(role),
+    canWrite: ["superadmin", "owner", "admin", "trainer", "member"].includes(role),
+    canManageAdmins: role === "superadmin",
   }), [role]);
 
   const value = useMemo(() => ({

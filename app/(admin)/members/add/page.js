@@ -30,7 +30,8 @@ import {
   Key,
   AlertTriangle,
   Info,
-  X
+  X,
+  Gift,
 } from "lucide-react";
 
 // Prevent scroll from changing number input values
@@ -107,6 +108,7 @@ export default function AddMemberPage() {
     selfPlanEditAccess: false,
     nextPaymentDate: "",
     profileImage: null,
+    referralCode: "",
   });
 
   // gym now comes from AuthContext
@@ -414,6 +416,27 @@ export default function AddMemberPage() {
       }
 
       console.log("Member created via transaction:", rpcResult);
+
+      // Process referral if code provided
+      if (formData.referralCode?.trim() && rpcResult?.member_id) {
+        try {
+          const refRes = await fetch('/api/referral', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-user-id': String(createdBy) },
+            body: JSON.stringify({
+              action: 'process',
+              new_member_id: rpcResult.member_id,
+              referrer_id: formData.referralCode.trim(),
+            }),
+          });
+          const refJson = await refRes.json();
+          if (refJson.data?.success) {
+            showSuccess(`Referral bonus: ${refJson.data.points_awarded} points awarded to ${refJson.data.referrer_name}!`);
+          }
+        } catch (refErr) {
+          console.error("Referral processing error:", refErr);
+        }
+      }
 
       // Show success message with appropriate status info
       const statusMessage = isStartDateInPast(formData.startDate) 
@@ -732,6 +755,24 @@ export default function AddMemberPage() {
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-1">Optional - 10 digits only</p>
+                </div>
+
+                {/* Referral Code */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Referral Code
+                  </label>
+                  <div className="relative">
+                    <Gift className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm placeholder:text-gray-400"
+                      placeholder="Enter referral code (member ID)"
+                      value={formData.referralCode}
+                      onChange={(e) => updateForm("referralCode", e.target.value.trim())}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Optional - Existing member&apos;s ID who referred this person</p>
                 </div>
 
                 {/* Self Plan Edit Access Toggle */}
