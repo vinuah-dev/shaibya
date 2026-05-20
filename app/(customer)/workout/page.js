@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -5,9 +6,11 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import { supabase } from "@/lib/supabaseClient";
 import { ChevronDown, ChevronUp, Dumbbell, Clock, RotateCcw } from "lucide-react";
+import { useGymLogo } from "@/lib/hooks/useGymLogo";
 
 export default function WorkoutPage() {
   const router = useRouter();
+  const gymLogo = useGymLogo();
   const [loading, setLoading] = useState(true);
   const [workoutPlans, setWorkoutPlans] = useState([]);
   const [todayWorkout, setTodayWorkout] = useState(null);
@@ -205,7 +208,7 @@ export default function WorkoutPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 pb-24">
-        <Header title="Workout" showBack={false} />
+        <Header title="Workout" showBack={false} gymLogo={gymLogo} />
         <div className="flex items-center justify-center h-96">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
         </div>

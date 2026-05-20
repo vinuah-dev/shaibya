@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
+import { useGymLogo } from "@/lib/hooks/useGymLogo";
 
 const mockCategories = [
   { id: "all", name: "All", icon: "📚" },
@@ -99,6 +100,7 @@ const mockArticles = [
 
 export default function KnowledgePage() {
   const router = useRouter();
+  const gymLogo = useGymLogo();
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -118,7 +120,7 @@ export default function KnowledgePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      <Header title="Knowledge Hub" showBack={false} />
+      <Header title="Knowledge Hub" showBack={false} gymLogo={gymLogo} />
 
       <main className="px-4 py-4 space-y-4">
         {/* Search */}

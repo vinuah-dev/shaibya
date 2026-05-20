@@ -7,9 +7,11 @@ import { supabase } from "@/lib/supabaseClient";
 import { clearSession } from "@/lib/sessionStorage";
 import { ProfilePageSkeleton } from "@/components/shared/CustomerSkeleton";
 import { Edit2, Camera, Calendar, AlertTriangle, DollarSign } from "lucide-react";
+import { useGymLogo } from "@/lib/hooks/useGymLogo";
 
 export default function CustomerProfilePage() {
   const router = useRouter();
+  const gymLogo = useGymLogo();
   const [activeTab, setActiveTab] = useState("membership");
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
@@ -214,7 +216,7 @@ export default function CustomerProfilePage() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-gray-50 pb-24">
-        <Header title="My Profile" showBack={false} />
+        <Header title="My Profile" showBack={false} gymLogo={gymLogo} />
         <div className="px-4 py-4 text-center">
           <p className="text-gray-500">Failed to load profile data</p>
         </div>

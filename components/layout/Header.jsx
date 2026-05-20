@@ -1,20 +1,69 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useNotification } from "@/contexts/NotificationContext";
 
-export default function Header({ title, showBack = true }) {
+export default function Header({ title, showBack = true, gymLogo = null }) {
   const router = useRouter();
   const { unreadCount, clearUnread, items } = useNotification();
 
   const [open, setOpen] = useState(false);
+  const [localLogo, setLocalLogo] = useState(null);
 
   const toggleOpen = () => {
     setOpen((v) => !v);
     clearUnread();
-    console.log('Bell clicked');
   };
+
+  // Gym logo fallback: try localStorage if no prop passed
+  useEffect(() => {
+    if (gymLogo) return;
+
+    const storedGym = localStorage.getItem("selectedGym");
+    if (storedGym) {
+      try {
+        const gym = JSON.parse(storedGym);
+        if (gym.logo_url) {
+          setLocalLogo(gym.logo_url);
+          return;
+        }
+      } catch (e) {
+        console.error("Error parsing selectedGym", e);
+      }
+    }
+
+    // Member fallback — fetch from Supabase
+    const storedMember = localStorage.getItem("member");
+    if (storedMember) {
+      try {
+        const member = JSON.parse(storedMember);
+        const fetchMemberLogo = async () => {
+          const { supabase } = await import("@/lib/supabaseClient");
+          const { data } = await supabase
+            .from("members")
+            .select("gym_id")
+            .eq("id", member.id)
+            .single();
+          if (data?.gym_id) {
+            const { data: gymData } = await supabase
+              .from("gyms")
+              .select("logo_url")
+              .eq("id", data.gym_id)
+              .single();
+            if (gymData?.logo_url) {
+              setLocalLogo(gymData.logo_url);
+            }
+          }
+        };
+        fetchMemberLogo();
+      } catch (e) {
+        console.error("Error fetching member logo", e);
+      }
+    }
+  }, [gymLogo]);
+
+  const displayLogo = gymLogo || localLogo;
 
   return (
     <header className="sticky top-0 bg-white border-b border-gray-100 z-50">
@@ -28,6 +77,13 @@ export default function Header({ title, showBack = true }) {
             >
               ←
             </button>
+          )}
+          {displayLogo && (
+            <img
+              src={displayLogo}
+              alt="Gym Logo"
+              className="h-9 w-9 rounded-lg object-cover"
+            />
           )}
           <h1 className="text-xl font-bold text-gray-900">{title}</h1>
         </div>

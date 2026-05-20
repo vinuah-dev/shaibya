@@ -1033,16 +1033,18 @@ export default function MemberDetailPage() {
         )}
 
         {/* Quick Action Buttons */}
-        <div className="grid grid-cols-5 gap-2">
-          <button
-            onClick={() => router.push(`/members/${member.id}/credentials`)}
-            className="bg-white rounded-xl p-3 border border-gray-200 shadow-sm flex flex-col items-center gap-1 hover:shadow-md transition-all duration-200 active:scale-95"
-          >
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg flex items-center justify-center">
-              <Key className="w-5 h-5 text-blue-600" />
-            </div>
-            <span className="text-xs font-medium text-gray-600">Credentials</span>
-          </button>
+        <div className={`grid gap-2 ${selectedGym?.plan_type !== 'basic' ? 'grid-cols-5' : 'grid-cols-4'}`}>
+          {selectedGym?.plan_type !== 'basic' && (
+            <button
+              onClick={() => router.push(`/members/${member.id}/credentials`)}
+              className="bg-white rounded-xl p-3 border border-gray-200 shadow-sm flex flex-col items-center gap-1 hover:shadow-md transition-all duration-200 active:scale-95"
+            >
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg flex items-center justify-center">
+                <Key className="w-5 h-5 text-blue-600" />
+              </div>
+              <span className="text-xs font-medium text-gray-600">Credentials</span>
+            </button>
+          )}
           
           <a
             href={`tel:${member.phone}`}

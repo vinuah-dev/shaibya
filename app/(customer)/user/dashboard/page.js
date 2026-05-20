@@ -34,6 +34,7 @@ export default function CustomerDashboard() {
     thisMonthAttendance: 0,
   });
   const [announcements, setAnnouncements] = useState([]);
+  const [gymLogo, setGymLogo] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
@@ -80,6 +81,17 @@ export default function CustomerDashboard() {
       }
 
       setMemberData(memberDetails);
+      // Fetch gym logo
+      if (memberDetails.gym_id) {
+        const { data: gymData } = await supabase
+          .from("gyms")
+          .select("logo_url")
+          .eq("id", memberDetails.gym_id)
+          .single();
+        if (gymData?.logo_url) {
+          setGymLogo(gymData.logo_url);
+        }
+      }
 
       // Calculate membership days left
       const activeMembership = memberDetails.memberships?.find(m => m.status === 'active');
@@ -227,7 +239,7 @@ export default function CustomerDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      <Header title="Home" showBack={false} />
+      <Header title="Home" showBack={false} gymLogo={gymLogo} />
 
       <main className="px-4 py-4 space-y-4">
         {/* Welcome */}

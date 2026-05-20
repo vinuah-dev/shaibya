@@ -13,6 +13,8 @@ export default function GymSettingsPage() {
   const { canCreateTrainer, isLoading: roleLoading } = useUserRole();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const [logoUrl, setLogoUrl] = useState(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [gymId, setGymId] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -96,8 +98,9 @@ export default function GymSettingsPage() {
           weekendEveningEnd: gymData.weekend_evening_end || "22:00",
           sundayOff: gymData.sunday_off || false,
           qrEnabled: gymData.qr_enabled !== null ? gymData.qr_enabled : true,
-          qrType: gymData.qr_type || "dynamic",
+         qrType: gymData.qr_type || "dynamic",
         });
+        setLogoUrl(gymData.logo_url || null);  
       }
     } catch (error) {
       console.error("[GymSettings] Error fetching gym data:", error);
@@ -105,6 +108,51 @@ export default function GymSettingsPage() {
     } finally {
       console.log("[GymSettings] fetchGymData: end");
       setFetching(false);
+    }
+  };
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !gymId) return;
+
+    setUploadingLogo(true);
+    try {
+      const filePath = `${gymId}/logo.png`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("gym-logos")
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from("gym-logos")
+        .getPublicUrl(filePath);
+
+      const freshUrl = `${data.publicUrl}?t=${Date.now()}`;
+
+      const { error: updateError } = await supabase
+        .from("gyms")
+        .update({ logo_url: freshUrl })
+        .eq("id", gymId);
+
+      if (updateError) throw updateError;
+
+      setLogoUrl(freshUrl);
+
+      // Update localStorage so navbar picks it up
+      const storedGym = localStorage.getItem("selectedGym");
+      if (storedGym) {
+        const gym = JSON.parse(storedGym);
+        gym.logo_url = freshUrl;
+        localStorage.setItem("selectedGym", JSON.stringify(gym));
+      }
+
+      showSuccess("Logo uploaded successfully!");
+    } catch (error) {
+      console.error("Logo upload error:", error);
+      showError("Failed to upload logo. Please try again.");
+    } finally {
+      setUploadingLogo(false);
     }
   };
 
@@ -234,6 +282,30 @@ export default function GymSettingsPage() {
         {/* Basic Info */}
         <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
           <h3 className="font-semibold text-gray-900">Basic Information</h3>
+          {/* Logo Upload */}
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50 flex-shrink-0">
+              {logoUrl ? (
+                <img src={logoUrl} alt="Gym Logo" className="w-full h-full object-cover rounded-xl" />
+              ) : (
+                <span className="text-2xl">🏢</span>
+              )}
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-700">Gym Logo</p>
+              <p className="text-xs text-gray-500 mb-2">Appears in the navbar for your gym</p>
+              <label className="inline-block px-4 py-2 bg-black text-white text-xs font-medium rounded-lg cursor-pointer active:scale-95 transition-transform">
+                {uploadingLogo ? "Uploading..." : logoUrl ? "Change Logo" : "Upload Logo"}
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg, image/svg+xml"
+                  onChange={handleLogoUpload}
+                  disabled={uploadingLogo}
+                  hidden
+                />
+              </label>
+            </div>
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

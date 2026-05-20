@@ -216,7 +216,7 @@ function useGymResolution() {
         if (user.gym_id) {
           const { data: gymData } = await supabase
             .from("gyms")
-            .select("id, name, address, timezone, created_at")
+            .select("id, name, address, timezone, created_at, logo_url, plan_type")
             .eq("id", user.gym_id)
             .single();
           if (!cancelled && gymData) {
@@ -226,7 +226,7 @@ function useGymResolution() {
         } else if (user.role === "trainer") {
           const { data: trainerData } = await supabase
             .from("gym_trainers")
-            .select("gym_id, gyms (id, name, address, timezone, created_at)")
+            .select("gym_id, gyms (id, name, address, timezone, created_at, logo_url, plan_type)")
             .eq("profile_id", user.id)
             .single();
           if (!cancelled && trainerData?.gyms) {
@@ -236,7 +236,7 @@ function useGymResolution() {
         } else if (user.role === "owner") {
           const { data: gymsData } = await supabase
             .from("gyms")
-            .select("id, name, address, timezone, created_at")
+            .select("id, name, address, timezone, created_at, logo_url, plan_type")
             .eq("owner_id", user.id);
           if (!cancelled) {
             setGyms(gymsData || []);
@@ -314,7 +314,7 @@ export default function AdminDashboard() {
   if (!selectedGym && gyms.length > 0) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 safe-area-inset-bottom">
-        <Header title="Select Gym" showBack={false} />
+        <Header title="Select Gym" showBack={false} gymLogo={selectedGym?.logo_url} />
         <main className="px-4 py-4 space-y-4">
           <div className="text-center mb-6 pt-2">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
@@ -334,8 +334,12 @@ export default function AdminDashboard() {
                 style={{ minHeight: "72px" }}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Building className="w-5 h-5 text-blue-600" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {gym.logo_url ? (
+                      <img src={gym.logo_url} alt="Gym Logo" className="w-full h-full object-cover" />
+                    ) : (
+                      <Building className="w-5 h-5 text-blue-600" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-gray-900 text-base truncate">{gym.name}</h3>
@@ -363,7 +367,7 @@ export default function AdminDashboard() {
   if (gyms.length === 0 && !selectedGym) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 safe-area-inset-bottom">
-        <Header title="Dashboard" showBack={false} />
+        <Header title="Dashboard" showBack={false} gymLogo={selectedGym?.logo_url} />
         <main className="px-4 py-4">
           <div className="text-center py-12">
             <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
@@ -388,7 +392,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b mb-17 from-gray-50 to-gray-100 safe-area-inset-bottom">
-      <Header title="Dashboard" showBack={false} />
+      <Header title="Dashboard" showBack={false} gymLogo={selectedGym?.logo_url} />
 
       <main className="px-3 py-2 space-y-4">
         {/* Welcome */}
