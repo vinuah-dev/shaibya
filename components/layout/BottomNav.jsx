@@ -16,6 +16,7 @@ import {
   ClipboardList,
   Trophy,
   ShoppingBag,
+  Activity,
 } from "lucide-react";
 import { usePermissions } from "@/lib/hooks/usePermissions";
 import { hasPermission, PERMISSIONS } from "@/lib/constants/permissions";
@@ -43,6 +44,7 @@ const customerNavItems = [
   { href: "/user/dashboard", label: "Home", icon: <Home className="w-5 h-5" /> },
   { href: "/workout", label: "Workout", icon: <Dumbbell className="w-5 h-5" /> },
   { href: "/diet", label: "Diet", icon: <Apple className="w-5 h-5" /> },
+  { href: "/health-tracker", label: "Health", icon: <Activity className="w-5 h-5" /> },
   { href: "/leaderboard", label: "Ranks", icon: <Trophy className="w-5 h-5" /> },
   { href: "/shop", label: "Shop", icon: <ShoppingBag className="w-5 h-5" /> },
   { href: "/user/announcements", label: "Alerts", icon: <Bell className="w-5 h-5" /> },
